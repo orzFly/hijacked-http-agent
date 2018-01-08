@@ -1,6 +1,16 @@
 {
   "name": "hijacked-http-agent",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "isomorphic-fetch": "^2.2.1",
+    "mocha": "^4.1.0",
+    "nyc": "^11.4.1"
+  },
+  "scripts": {
+    "test": "node_modules/.bin/mocha",
+    "test:coverage": "node_modules/.bin/nyc node_modules/.bin/mocha"
+  }
 }

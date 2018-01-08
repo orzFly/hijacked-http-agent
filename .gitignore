@@ -1,0 +1,11 @@
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+/icon.png
+node_modules
+node_modules_*
+/build-*
+.vscode/
+
+.nyc_output/
