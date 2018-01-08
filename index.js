@@ -43,16 +43,13 @@ function hijackedAddRequest(self, req, options) {
   options.host = replaceDomain(self.domainMap, options.host);
   options.hostname = replaceDomain(self.domainMap, options.hostname);
 
-  /* istanbul ignore if: node < 8*/
   if (req._headers) {
     replaceHeaders(self, req._headers);
   }
 
-  /* istanbul ignore if: node > 8*/
   if (Object.getOwnPropertySymbols) {
     for(const symbol of Object.getOwnPropertySymbols(req)) {
-      /* istanbul ignore if */
-      if (symbol.toString() == "Symbol(outHeadersKey)") {
+      if (symbol.toString() === "Symbol(outHeadersKey)") {
         replaceHeaders(self, req[symbol]);
         break;
       }
