@@ -11,15 +11,19 @@ const assertExampleContent = function(i) {
 }
 
 describe('hijacked-http-agent', () => {
-  it('should hijack isomorphic-fetch http', () => {
-    return fetch("http://www.google.com/index.html")
-      .then((i) => i.text())
-      .then((i) => assertExampleContent(i))
-  })
+  describe('should hijack', () => {
+    describe('isomorphic-fetch', () => {
+      it('http', () => {
+        return fetch("http://www.google.com/index.html")
+          .then((i) => i.text())
+          .then((i) => assertExampleContent(i))
+      })
 
-  it('should hijack isomorphic-fetch https', () => {
-    return fetch("https://www.google.com/index.html")
-      .then((i) => i.text())
-      .then((i) => assertExampleContent(i))
+      it('https', () => {
+        return fetch("https://www.google.com/index.html")
+          .then((i) => i.text())
+          .then((i) => assertExampleContent(i))
+      })
+    })
   })
 })
