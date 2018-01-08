@@ -30,27 +30,31 @@ function replaceDomain(domainMap, domain) {
   return domain;
 }
 
+function replaceHeaders(self, headers) {
+  if (headers.host && headers.host.length == 2 && headers.host[1]) {
+    headers.host[1] = replaceDomain(self.domainMap, headers.host[1]);
+  } else if (headers.host && isString(headers.host)) {
+    headers.host = replaceDomain(self.domainMap, headers.host);
+  }
+}
+
 function hijackedAddRequest(self, req, options) {
   req.hostname = replaceDomain(self.domainMap, req.hostname);
   options.host = replaceDomain(self.domainMap, options.host);
   options.hostname = replaceDomain(self.domainMap, options.hostname);
 
+  /* istanbul ignore if: node < 8*/
   if (req._headers) {
-    const headers = req._headers;
-    if (headers.host && headers.host.length == 2 && headers.host[1]) {
-      headers.host[1] = replaceDomain(self.domainMap, headers.host[1]);
-    } else if (headers.host && isString(headers.host)) {
-      headers.host = replaceDomain(self.domainMap, headers.host);
-    }
+    replaceHeaders(self, req._headers);
   }
 
+  /* istanbul ignore if: node > 8*/
   if (Object.getOwnPropertySymbols) {
     for(const symbol of Object.getOwnPropertySymbols(req)) {
+      /* istanbul ignore if */
       if (symbol.toString() == "Symbol(outHeadersKey)") {
-        const headers = req[symbol];
-        if (headers.host && headers.host.length == 2 && headers.host[1]) {
-          headers.host[1] = replaceDomain(self.domainMap, headers.host[1]);
-        }
+        replaceHeaders(self, req[symbol]);
+        break;
       }
     }
   }
