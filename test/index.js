@@ -4,7 +4,6 @@ const expect = require('chai').expect;
 const lib = require('..');
 const http = require('http');
 const https = require('https');
-require('isomorphic-fetch');
 
 const assertHijackedContent = function(i) {
   expect(i).to.include("<h1>Example Domain</h1>");
@@ -14,25 +13,48 @@ const assertOriginalContent = function(i) {
   expect(i).to.include("<h1>httpbin(1)");
 }
 
+const tryHttpGetWithAgent = function(agent, callback) {
+  http.get({
+    hostname: 'httpbin.org',
+    port: 80,
+    path: '/',
+    agent: agent
+  }, (res) => {
+    let rawData = '';
+    res.setEncoding('utf8');
+    res.on('data', (chunk) => { rawData += chunk; });
+    res.on('end', () => {
+      callback(rawData);
+    });
+  });
+}
+
+const tryHttpsGetWithAgent = function(agent, callback) {
+  https.get({
+    hostname: 'httpbin.org',
+    port: 443,
+    path: '/',
+    agent: agent
+  }, (res) => {
+    let rawData = '';
+    res.setEncoding('utf8');
+    res.on('data', (chunk) => { rawData += chunk; });
+    res.on('end', () => {
+      callback(rawData);
+    });
+  });
+}
+
 describe('hijacked-http-agent', () => {
 
   describe('HijackedHttpAgent', () => {
 
-    const tryHttpGetWithAgent = function(agent, callback) {
-      http.get({
-        hostname: 'httpbin.org',
-        port: 80,
-        path: '/',
-        agent: agent
-      }, (res) => {
-        let rawData = '';
-        res.setEncoding('utf8');
-        res.on('data', (chunk) => { rawData += chunk; });
-        res.on('end', () => {
-          callback(rawData);
-        });
+    it('(request works without our agent)', (done) => {
+      tryHttpGetWithAgent(undefined, (data) => {
+        assertOriginalContent(data);
+        done();
       });
-    }
+    });
 
     it('can be used without mapping', (done) => {
       const agent = new lib.HijackedHttpAgent();
@@ -81,21 +103,12 @@ describe('hijacked-http-agent', () => {
 
   describe('HijackedHttpsAgent', () => {
 
-    const tryHttpsGetWithAgent = function(agent, callback) {
-      https.get({
-        hostname: 'httpbin.org',
-        port: 443,
-        path: '/',
-        agent: agent
-      }, (res) => {
-        let rawData = '';
-        res.setEncoding('utf8');
-        res.on('data', (chunk) => { rawData += chunk; });
-        res.on('end', () => {
-          callback(rawData);
-        });
+    it('(request works without our agent)', (done) => {
+      tryHttpsGetWithAgent(undefined, (data) => {
+        assertOriginalContent(data);
+        done();
       });
-    }
+    });
 
     it('can be used without mapping', (done) => {
       const agent = new lib.HijackedHttpsAgent();
@@ -156,7 +169,62 @@ describe('hijacked-http-agent', () => {
       expect(https.globalAgent).to.be.an.instanceof(lib.HijackedHttpsAgent);
     });
 
-    describe('should hijack isomorphic-fetch', () => {
+    describe('should hijack node http & https', () => {
+      it('http', (done) => {
+        tryHttpGetWithAgent(undefined, (data) => {
+          assertHijackedContent(data);
+          done();
+        });
+      });
+
+      it('https', (done) => {
+        tryHttpsGetWithAgent(undefined, (data) => {
+          assertHijackedContent(data);
+          done();
+        });
+      });
+
+    });
+
+    describe('should hijack node http & https', () => {
+
+      const request = require('request');
+
+      it('http', (done) => {
+        request('http://httpbin.org/', (err, res, body) => {
+          assertHijackedContent(body);
+          done();
+        });
+      });
+
+      it('https', (done) => {
+        request('https://httpbin.org/', (err, res, body) => {
+          assertHijackedContent(body);
+          done();
+        });
+      });
+
+    });
+
+    describe('should hijack axios', () => {
+
+      const axios = require('axios');
+
+      it('http', () => {
+        return axios.get("http://httpbin.org/")
+          .then((response) => assertHijackedContent(response.data))
+      });
+
+      it('https', () => {
+        return axios.get("https://httpbin.org/")
+          .then((response) => assertHijackedContent(response.data))
+      });
+
+    });
+
+    describe('should hijack node-fetch', () => {
+
+      const fetch = require('node-fetch');
 
       it('http', () => {
         return fetch("http://httpbin.org/")
