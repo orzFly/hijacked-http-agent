@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+const expect = require('chai').expect;
 
 require('..').hijackGlobalAgent({
   "www.google.com": "example.com"
