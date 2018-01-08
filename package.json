@@ -7,17 +7,15 @@
     "axios": "^0.17.1",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
+    "got": "^8.0.1",
     "mocha": "^4.1.0",
     "node-fetch": "^1.7.3",
     "nyc": "^11.4.1",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "superagent": "^3.8.2"
   },
   "scripts": {
     "test": "node_modules/.bin/nyc node_modules/.bin/mocha",
     "coverage": "node_modules/.bin/nyc report --reporter=text-lcov | node_modules/.bin/coveralls"
-  },
-  "dependencies": {
-    "got": "^8.0.1",
-    "superagent": "^3.8.2"
   }
 }
