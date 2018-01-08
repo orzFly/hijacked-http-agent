@@ -184,9 +184,22 @@ describe('hijacked-http-agent', () => {
         });
       });
 
+      it('http (opt-out)', (done) => {
+        tryHttpGetWithAgent(false, (data) => {
+          assertOriginalContent(data);
+          done();
+        });
+      });
+
+      it('https (opt-out)', (done) => {
+        tryHttpsGetWithAgent(false, (data) => {
+          assertOriginalContent(data);
+          done();
+        });
+      });
     });
 
-    describe('should hijack node http & https', () => {
+    describe('should hijack request', () => {
 
       const request = require('request');
 
@@ -199,6 +212,20 @@ describe('hijacked-http-agent', () => {
 
       it('https', (done) => {
         request('https://httpbin.org/', (err, res, body) => {
+          assertHijackedContent(body);
+          done();
+        });
+      });
+
+      it('http (opt-out)', (done) => {
+        request('http://httpbin.org/', { agent: false }, (err, res, body) => {
+          assertHijackedContent(body);
+          done();
+        });
+      });
+
+      it('https (opt-out)', (done) => {
+        request('https://httpbin.org/', { agent: false }, (err, res, body) => {
           assertHijackedContent(body);
           done();
         });
@@ -236,6 +263,56 @@ describe('hijacked-http-agent', () => {
         return fetch("https://httpbin.org/")
           .then((i) => i.text())
           .then((i) => assertHijackedContent(i))
+      });
+
+    });
+
+    describe('should hijack superagent', () => {
+
+      const superagent = require('superagent');
+
+      it('http', (done) => {
+        superagent.get('http://httpbin.org/').agent(undefined).end((err, res) => {
+          assertHijackedContent(res.text);
+          done();
+        });
+      });
+
+      it('https', (done) => {
+        superagent.get('https://httpbin.org/').agent(undefined).end((err, res) => {
+          assertHijackedContent(res.text);
+          done();
+        });
+      });
+
+      it('http (opt-out)', (done) => {
+        superagent.get('http://httpbin.org/').end((err, res) => {
+          assertOriginalContent(res.text);
+          done();
+        });
+      });
+
+      it('https (opt-out)', (done) => {
+        superagent.get('https://httpbin.org/').end((err, res) => {
+          assertOriginalContent(res.text);
+          done();
+        });
+      });
+
+    });
+
+    describe('should hijack got', () => {
+
+      const got = require('got');
+
+      it('http', () => {
+        return got.get("http://httpbin.org/")
+          .then((response) => assertHijackedContent(response.body))
+      });
+
+      it('https', () => {
+        return got.get("https://httpbin.org/")
+          .then((response) => assertHijackedContent(response.body))
       });
 
     });
